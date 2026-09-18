@@ -1,0 +1,17 @@
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+[functions]
+  node_bundler = "esbuild"
+
+[[redirects]]
+  from = "/api/news"
+  to = "/.netlify/functions/news"
+  status = 200
+  force = true
+
+[[headers]]
+  for = "/api/news"
+  [headers.values]
+    Cache-Control = "public, max-age=120, s-maxage=300, stale-while-revalidate=900"
