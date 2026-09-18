@@ -95,7 +95,7 @@ function parseRss(xml, category, source) {
       link,
       description: description || `Read the latest ${category} report from ${source}.`,
       pubDate: Number.isNaN(parsedDate.getTime()) ? new Date().toISOString() : parsedDate.toISOString(),
-      image: image || `https://picsum.photos/seed/${encodeURIComponent(id)}/900/600`,
+      image: image || '',
       category,
       source
     };
@@ -127,7 +127,8 @@ function json(statusCode, body, extraHeaders = {}) {
     headers: {
       'content-type': 'application/json; charset=utf-8',
       'cache-control': 'public, max-age=120, s-maxage=300, stale-while-revalidate=900',
-      'access-control-allow-origin': '*',
+      'access-control-allow-origin': 'https://tubular-dango-8a8844.netlify.app',
+      'x-content-type-options': 'nosniff',
       ...extraHeaders
     },
     body: JSON.stringify(body)
@@ -136,7 +137,7 @@ function json(statusCode, body, extraHeaders = {}) {
 
 exports.handler = async function handler(event) {
   if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 204, headers: { 'access-control-allow-origin': '*', 'access-control-allow-methods': 'GET, OPTIONS', 'access-control-allow-headers': 'Content-Type' }, body: '' };
+    return { statusCode: 204, headers: { 'access-control-allow-origin': 'https://tubular-dango-8a8844.netlify.app', 'access-control-allow-methods': 'GET, OPTIONS', 'access-control-allow-headers': 'Content-Type', 'x-content-type-options': 'nosniff' }, body: '' };
   }
   if (event.httpMethod !== 'GET') return json(405, { error: 'Method not allowed' }, { allow: 'GET, OPTIONS' });
 
