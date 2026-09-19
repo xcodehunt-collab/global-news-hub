@@ -1,5 +1,5 @@
-const CACHE_NAME='global-news-hub-v4-notifications';
-const STATIC_ASSETS=['./','./index.html','./style.css','./app.js','./manifest.json'];
+const CACHE_NAME='global-news-hub-v7-blue-brand';
+const STATIC_ASSETS=['./','./index.html','./style.css','./app.js','./manifest.json','./logo.svg'];
 
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(STATIC_ASSETS)).then(()=>self.skipWaiting()));
