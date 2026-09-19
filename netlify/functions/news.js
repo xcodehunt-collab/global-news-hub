@@ -95,7 +95,7 @@ function parseRss(xml, category, source) {
       link,
       description: description || `Read the latest ${category} report from ${source}.`,
       pubDate: Number.isNaN(parsedDate.getTime()) ? new Date().toISOString() : parsedDate.toISOString(),
-      image: image || '',
+      image: image ? `/api/image?url=${encodeURIComponent(image)}` : '',
       category,
       source
     };
