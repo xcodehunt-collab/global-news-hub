@@ -20,6 +20,40 @@ const FEEDS = {
   entertainment: [{ name: 'BBC Entertainment & Arts', url: 'https://feeds.bbci.co.uk/news/entertainment_and_arts/rss.xml' }]
 };
 
+const REGIONAL_FEEDS = {
+  GB: [
+    { name: 'BBC UK', url: 'https://feeds.bbci.co.uk/news/uk/rss.xml' },
+    { name: 'Sky News UK', url: 'https://feeds.skynews.com/feeds/rss/uk.xml' }
+  ],
+  US: [
+    { name: 'BBC US & Canada', url: 'https://feeds.bbci.co.uk/news/world/us_and_canada/rss.xml' }
+  ],
+  CA: [
+    { name: 'BBC US & Canada', url: 'https://feeds.bbci.co.uk/news/world/us_and_canada/rss.xml' }
+  ],
+  AU: [
+    { name: 'BBC Asia', url: 'https://feeds.bbci.co.uk/news/world/asia/rss.xml' }
+  ],
+  IN: [
+    { name: 'BBC Asia', url: 'https://feeds.bbci.co.uk/news/world/asia/rss.xml' }
+  ],
+  SG: [
+    { name: 'BBC Asia', url: 'https://feeds.bbci.co.uk/news/world/asia/rss.xml' }
+  ],
+  JP: [
+    { name: 'BBC Asia', url: 'https://feeds.bbci.co.uk/news/world/asia/rss.xml' }
+  ],
+  AE: [
+    { name: 'BBC Middle East', url: 'https://feeds.bbci.co.uk/news/world/middle_east/rss.xml' }
+  ],
+  DE: [
+    { name: 'BBC Europe', url: 'https://feeds.bbci.co.uk/news/world/europe/rss.xml' }
+  ],
+  FR: [
+    { name: 'BBC Europe', url: 'https://feeds.bbci.co.uk/news/world/europe/rss.xml' }
+  ]
+};
+
 const MAX_ITEMS = 35;
 const FETCH_TIMEOUT_MS = 8500;
 
@@ -141,19 +175,20 @@ exports.handler = async function handler(event) {
   }
   if (event.httpMethod !== 'GET') return json(405, { error: 'Method not allowed' }, { allow: 'GET, OPTIONS' });
 
-  if (String(event.queryStringParameters?.health || '') === '1') return json(200, { ok: true, service: 'Global News Hub', time: new Date().toISOString(), categories: Object.keys(FEEDS) });
+  if (String(event.queryStringParameters?.health || '') === '1') return json(200, { ok: true, service: 'Global News Hub', time: new Date().toISOString(), categories: ['regional', ...Object.keys(FEEDS)], regions: Object.keys(REGIONAL_FEEDS) });
 
   const category = String(event.queryStringParameters?.category || '').toLowerCase();
+  const region = String(event.queryStringParameters?.region || 'GLOBAL').toUpperCase();
   const requestedSource = String(event.queryStringParameters?.source || '');
-  if (!FEEDS[category]) return json(400, { error: 'Unknown category' });
+  if (category !== 'regional' && !FEEDS[category]) return json(400, { error: 'Unknown category' });
 
-  let feeds = FEEDS[category];
+  let feeds = category === 'regional' ? (REGIONAL_FEEDS[region] || FEEDS.world) : FEEDS[category];
   if (requestedSource) feeds = feeds.filter(feed => feed.name === requestedSource);
   if (!feeds.length) return json(404, { error: 'Unknown source' });
 
   const results = await Promise.allSettled(feeds.map(async feed => {
     const xml = await fetchXml(feed.url);
-    const articles = parseRss(xml, category, feed.name);
+    const articles = parseRss(xml, category === 'regional' ? 'regional' : category, feed.name);
     if (!articles.length) throw new Error('No readable RSS items');
     return { source: feed.name, articles };
   }));
@@ -170,5 +205,5 @@ exports.handler = async function handler(event) {
     .sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
 
   if (!unique.length) return json(502, { error: 'All requested RSS feeds failed', errors });
-  return json(200, { category, articles: unique, errors, generatedAt: new Date().toISOString() });
+  return json(200, { category, region: category === 'regional' ? region : undefined, articles: unique, errors, generatedAt: new Date().toISOString() });
 };
