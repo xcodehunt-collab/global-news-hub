@@ -46,3 +46,41 @@ function bind(){$('#heroPrev').onclick=()=>showHero(state.hero-1);$('#heroNext')
 async function init(){document.body.classList.add('js-ready');$('#dateBadge').textContent='Date: '+new Date().toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric',year:'numeric'});bind();updateCounter();try{await navigator.serviceWorker?.register('./service-worker.js',{updateViaCache:'none'})}catch{}state.region=await detectRegion();renderRegion();if('Notification'in window&&Notification.permission!=='granted'&&localStorage.getItem('gnh_banner')!=='dismissed')$('#notificationBanner').hidden=false;schedule();await loadAllNews()}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#settingsModal').hidden)closeSettings()});
 document.addEventListener('DOMContentLoaded',init);
+
+
+// Article Brief reader
+let briefLastFocus=null;
+function briefText(article){
+  const raw=(article.description||article.summary||article.content||'').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim();
+  return raw||'The publisher feed does not include a written summary for this story. Use “View Original Article” to read the complete report from the official source.';
+}
+function openArticleBrief(article,trigger){
+  if(!article)return;
+  briefLastFocus=trigger||document.activeElement;
+  const modal=document.getElementById('articleBrief');
+  document.getElementById('briefTitle').textContent=article.title||'News story';
+  document.getElementById('briefSummary').textContent=briefText(article);
+  document.getElementById('briefCategory').textContent=(LABELS[article.category]||article.category||'News');
+  document.getElementById('briefSource').textContent=article.source||'Original publisher';
+  document.getElementById('briefTime').textContent=article.pubDate?new Date(article.pubDate).toLocaleString():'';
+  const original=document.getElementById('briefOriginal');
+  original.href=article.link||'#';
+  const image=document.getElementById('briefImage');
+  image.innerHTML=article.image?'<img src="'+escapeHtml(article.image)+'" alt="">':'<div class="brief-image-placeholder">GLOBAL NEWS HUB</div>';
+  modal.hidden=false; modal.setAttribute('aria-hidden','false'); document.body.classList.add('brief-open');
+  document.getElementById('briefClose').focus();
+}
+function closeArticleBrief(){
+  const modal=document.getElementById('articleBrief'); if(!modal||modal.hidden)return;
+  modal.hidden=true; modal.setAttribute('aria-hidden','true'); document.body.classList.remove('brief-open');
+  if(briefLastFocus&&briefLastFocus.focus)briefLastFocus.focus();
+}
+document.addEventListener('click',e=>{
+  const link=e.target.closest('a[href]');
+  if(link&&!link.closest('#articleBrief')){
+    const article=state.articles.find(a=>a.link===link.href||a.link===link.getAttribute('href'));
+    if(article){e.preventDefault();openArticleBrief(article,link);return;}
+  }
+  if(e.target.closest('[data-brief-close],#briefClose,#briefBack'))closeArticleBrief();
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!document.getElementById('articleBrief')?.hidden)closeArticleBrief();});
