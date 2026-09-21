@@ -1,4 +1,4 @@
-const CACHE_NAME='global-news-hub-v14-article-brief';
+const CACHE_NAME='global-news-hub-v15-brief-click-fix';
 const STATIC_ASSETS=['./','./index.html','./style.css','./app.js','./manifest.json','./logo.svg'];
 
 self.addEventListener('install',event=>{
