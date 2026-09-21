@@ -1,4 +1,4 @@
-const CACHE_NAME='global-news-hub-v9-regional';
+const CACHE_NAME='global-news-hub-v10-interaction-audit';
 const STATIC_ASSETS=['./','./index.html','./style.css','./app.js','./manifest.json','./logo.svg'];
 
 self.addEventListener('install',event=>{
@@ -36,14 +36,14 @@ self.addEventListener('fetch',event=>{
 self.addEventListener('push',event=>{
   let data={title:'Global News Hub',body:'A new story is available.',url:'./'};
   if(event.data){ try{ data={...data,...event.data.json()}; }catch{ data.body=event.data.text(); } }
-  event.waitUntil(self.registration.showNotification(data.title,{body:data.body,icon:'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"><rect width="128" height="128" rx="28" fill="#ff3b3b"/><text x="64" y="86" text-anchor="middle" font-size="76">📰</text></svg>'),data:{url:data.url},tag:'global-news-hub-push'}));
+  event.waitUntil(self.registration.showNotification(data.title,{body:data.body,icon:'./logo.svg',data:{url:data.url},tag:'global-news-hub-push'}));
 });
 
 self.addEventListener('notificationclick',event=>{
   event.notification.close();
   const rawTarget=event.notification.data && event.notification.data.url ? event.notification.data.url : self.registration.scope;
   let target;
-  try{ target=new URL(rawTarget,self.registration.scope).href; }catch{ target=self.registration.scope; }
+  try{ const u=new URL(rawTarget,self.registration.scope); target=['http:','https:'].includes(u.protocol)?u.href:self.registration.scope; }catch{ target=self.registration.scope; }
   event.waitUntil((async()=>{
     const windows=await clients.matchAll({type:'window',includeUncontrolled:true});
     for(const client of windows){
