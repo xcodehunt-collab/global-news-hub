@@ -66,7 +66,7 @@ function openArticleBrief(article,trigger){
   const original=document.getElementById('briefOriginal');
   original.href=article.link||'#';
   const image=document.getElementById('briefImage');
-  image.innerHTML=article.image?'<img src="'+escapeHtml(article.image)+'" alt="">':'<div class="brief-image-placeholder">GLOBAL NEWS HUB</div>';
+  image.innerHTML=article.image?'<img src="'+esc(article.image)+'" alt="">':'<div class="brief-image-placeholder">GLOBAL NEWS HUB</div>';
   modal.hidden=false; modal.setAttribute('aria-hidden','false'); document.body.classList.add('brief-open');
   document.getElementById('briefClose').focus();
 }
