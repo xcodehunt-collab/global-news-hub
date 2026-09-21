@@ -208,13 +208,17 @@ async function handler(event) {
   return json(200, { category, region: category === 'regional' ? region : undefined, articles: unique, errors, generatedAt: new Date().toISOString() });
 };
 
-
 module.exports = async function(req,res){
-  const url=new URL(req.url,'https://local.invalid');
-  const event={httpMethod:req.method,queryStringParameters:Object.fromEntries(url.searchParams.entries())};
-  const out=await handler(event);
-  res.statusCode=out.statusCode||200;
-  for(const [k,v] of Object.entries(out.headers||{})) res.setHeader(k,v);
-  if(out.isBase64Encoded){res.end(Buffer.from(out.body||'','base64'));return;}
-  res.end(out.body||'');
+  const query=req.query||{};
+  const event={httpMethod:req.method||'GET',queryStringParameters:query};
+  try{
+    const out=await handler(event);
+    res.status(out.statusCode||200);
+    for(const [k,v] of Object.entries(out.headers||{})) res.setHeader(k,v);
+    if(out.isBase64Encoded){res.end(Buffer.from(out.body||'','base64'));return;}
+    res.send(out.body||'');
+  }catch(err){
+    console.error('news api error',err);
+    res.status(500).json({error:'News API failed',message:err?.message||'Unknown error'});
+  }
 };
