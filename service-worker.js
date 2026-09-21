@@ -1,4 +1,4 @@
-const CACHE_NAME='global-news-hub-v8-image-fix';
+const CACHE_NAME='global-news-hub-v9-regional';
 const STATIC_ASSETS=['./','./index.html','./style.css','./app.js','./manifest.json','./logo.svg'];
 
 self.addEventListener('install',event=>{
