@@ -1,4 +1,4 @@
-const CACHE_NAME='global-news-hub-v11-loading-fix';
+const CACHE_NAME='global-news-hub-v12-category-dedupe-fix';
 const STATIC_ASSETS=['./','./index.html','./style.css','./app.js','./manifest.json','./logo.svg'];
 
 self.addEventListener('install',event=>{
